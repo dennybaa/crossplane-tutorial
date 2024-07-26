@@ -2,7 +2,7 @@
   packages = with pkgs; [
     gum
     gh
-    kind
+    k3d
     kubectl
     yq-go
     jq

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 gum style \
@@ -42,44 +42,41 @@ rm -f .env
 # Control Plane Cluster #
 #########################
 
-kind create cluster --config kind.yaml
+# k3d cluster create --config k3d.yaml
 
-kubectl apply \
-    --filename https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+# ##############
+# # Crossplane #
+# ##############
 
-##############
-# Crossplane #
-##############
+# helm repo add crossplane-stable https://charts.crossplane.io/stable
+# helm repo update
 
-helm repo add crossplane-stable https://charts.crossplane.io/stable
-helm repo update
+# helm upgrade --install crossplane crossplane \
+#     --repo https://charts.crossplane.io/stable \
+#     --namespace crossplane-system --create-namespace --wait
 
-helm upgrade --install crossplane crossplane \
-    --repo https://charts.crossplane.io/stable \
-    --namespace crossplane-system --create-namespace --wait
+# kubectl apply \
+#     --filename providers/provider-kubernetes-incluster.yaml
 
-kubectl apply \
-    --filename providers/provider-kubernetes-incluster.yaml
+# kubectl apply --filename providers/provider-helm-incluster.yaml
 
-kubectl apply --filename providers/provider-helm-incluster.yaml
+# kubectl apply --filename providers/dot-kubernetes.yaml
 
-kubectl apply --filename providers/dot-kubernetes.yaml
+# kubectl apply --filename providers/dot-sql.yaml
 
-kubectl apply --filename providers/dot-sql.yaml
+# kubectl apply --filename providers/dot-app.yaml
 
-kubectl apply --filename providers/dot-app.yaml
-
-gum spin --spinner dot \
-    --title "Waiting for Crossplane providers..." -- sleep 60
+# gum spin --spinner dot \
+#     --title "Waiting for Crossplane providers..." -- sleep 60
 
 kubectl wait --for=condition=healthy provider.pkg.crossplane.io \
     --all --timeout=1800s
 
 echo "## Which Hyperscaler do you want to use?" | gum format
 
-HYPERSCALER=$(gum choose "google" "aws" "azure")
-
-echo "export HYPERSCALER=$HYPERSCALER" >> .env
+#HYPERSCALER=$(gum choose "google" "aws" "azure")
+export HYPERSCALER=google
+echo "export HYPERSCALER=google" >> .env
 
 if [[ "$HYPERSCALER" == "google" ]]; then
 
